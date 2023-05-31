@@ -26,123 +26,9 @@ def get_word():
     return word_list[random.randint(0, len(word_list) - 1)].upper()
 
 
-def display_hangman(tries):
-    stages = [
-        '''
-        \|||/ 
-        (o o)
-----ooO--(_)---------
-|                     |
-|                     |
-|      К О Н Е Ц      |
-|                     |
-|                     |
-'---------------ooO---'
-       |  |  | 
-       |  |  | 
-       |__|__| 
-       /_'Y'_\  
-      (__/ \__)  
-        ''',
-        '''
-        \|||/ 
-        (o o)
-----ooO--(_)---------
-|                     |
-|                     |
-|  Осталось 1 попытка |
-|                     |
-|                     |
-'---------------ooO---'
-       |  |  | 
-       |  |  | 
-       |__|__| 
-       /_'Y'_\  
-      (__/ \__)  
-        ''',
-        '''
-        \|||/ 
-        (o o)
-----ooO--(_)---------
-|                     |
-|                     |
-|  Осталось 2 попытки |
-|                     |
-|                     |
-'---------------ooO---'
-       |  |  | 
-       |  |  | 
-       |__|__| 
-       /_'Y'_\  
-      (__/ \__)  
-        ''',
-
-        '''
-        \|||/ 
-        (o o)
-----ooO--(_)---------
-|                     |
-|                     |
-|  Осталось 3 попытки |
-|                     |
-|                     |
-'---------------ooO---'
-       |  |  | 
-       |  |  | 
-       |__|__| 
-       /_'Y'_\  
-      (__/ \__)  
-        ''',
-        '''
-        \|||/ 
-        (o o)
-----ooO--(_)---------
-|                     |
-|                     |
-|  Осталось 4 попытки |
-|                     |
-|                     |
-'---------------ooO---'
-       |  |  | 
-       |  |  | 
-       |__|__| 
-       /_'Y'_\  
-      (__/ \__)  
-        ''',
-        '''
-        \|||/ 
-        (o o)
-----ooO--(_)---------
-|                     |
-|                     |
-|  Осталось 5 попыток |
-|                     |
-|                     |
-'---------------ooO---'
-       |  |  | 
-       |  |  | 
-       |__|__| 
-       /_'Y'_\  
-      (__/ \__)  
-        ''',
-        '''
-        \|||/
-        (o o)
-----ooO--(_)---------
-|                     |
-|                     |
-|  Осталось 6 попыток |
-|                     |
-|                     |
-'---------------ooO---'
-       |  |  | 
-       |  |  | 
-       |__|__| 
-       /_'Y'_\  
-      (__/ \__)  
-      '''
-    ]
-    return stages[tries]
+def display_hangman(tries, s_word):
+    stages = [(("\033[0;32m\U0001f9E1 \033[0;0m" * tries) + ("\033[0;32m\U0001f90D \033[0;0m" * (len(s_word) - tries)))]
+    return stages[0]
 
 
 def play(word):
@@ -150,7 +36,7 @@ def play(word):
     guessed = False  # сигнальная метка
     guessed_letters = []  # список уже названных букв
     guessed_words = []  # список уже названных слов
-    tries = 6
+    tries = len(word)
     print('Привет мир!\nДавайте играть в угадайку слов!\nУсловия:\n1. Программа загадывает слово, а пользователь должен его угадать. \n'
           '2. Также рисуется виселица с петлей.\n3. Пользователь предлагает букву, которая может входить в это слово. '
           'Если такая буква есть в слове, то программа ставит букву столько раз, сколько она встречается в слове. '
@@ -181,35 +67,35 @@ def play(word):
         if word_completion == word:  # Проверка на случай угадывания слова по одной букве
             print('Ура! Вы выиграли!')
             break
-        print(display_hangman(tries))
+        print(display_hangman(tries, word))
         print(separator)
         print(*word_completion)
         user_letter = input('\nВведите букву или слово полностью: ').upper()
         if len(user_letter) == len(word):  # Проверка на слово полностью
             if user_letter in guessed_words:
                 print('Такое слово вы уже пробовали, это не оно!')
-                continue
             guessed_words.append(user_letter.upper())
             if user_letter.upper() == word:  # Проверка на ввод слова полностью
                 print('Ура! Вы выиграли!')
                 break
         if not user_letter.isalpha():
             print('Вы что-то неправильно ввели!')
-            continue
         elif user_letter in guessed_letters:
             print('Вы уже называли такую букву!')
-            continue
+            tries -= 1
         guessed_letters.append(user_letter)  # Добавляем букву в список уже названных букв
         if user_letter in word:  # Если буква была угадана
-            lst = list(word_completion)
-            lst[word.index(user_letter)] = word[word.index(user_letter)]
-            word_completion = ''.join(lst)
+            for i in range(len(word)):
+                if user_letter == word[i]:
+                    lst = list(word_completion)
+                    lst[i] = word[i]
+                    word_completion = ''.join(lst)
             tries -= 1
         else:
             print('Вы не угадали букву/слово!')
             tries -= 1
     print('Игра закончена!')
-    print(display_hangman(0))
+    print(display_hangman(tries, word))
     print('Загаданное слово было:', word)
 
 questions = ['Вопрос. Что использовали в Китае для глажки белья вместо утюга?', 'Вопрос. По традиции в Китае муж может в одностороннем порядке объявить о расторжении брака по семейным обстоятельствам. Назовите одну из причин для этого.',
